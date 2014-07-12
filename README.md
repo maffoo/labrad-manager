@@ -7,3 +7,5 @@ should still be considered experimental, but is intended to serve as a
 testing area for new labrad features such as new types, more efficient
 data protocol, and so forth.
 
+The GUI also requires the qt4reactor, but the console version will run
+fine without it.

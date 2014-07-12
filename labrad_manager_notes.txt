@@ -1,0 +1,136 @@
+Labrad manager tasks:
+
+Notes:
+pylabrad 0.92 types;
+
+1.0, Value(1.0), Value(1.0, None) -> 'v'
+Value(1.0, ''), (1.0*GHz / (1.0*GHz)) -> 'v[]'
+
+Labrad manager converts v-> target units, but v[] is explicitly dimensionless
+
+pylabrad servers don't include type tags on unflatten, so handleRequest
+expects records without type tags.  sendPacket can accept records with type
+tags, but does not require them.
+
+
+TODO: 
+Core:
+	Optimize unit conversion for arrays using numpy
+	Behavior to test:
+       	    rejecting incompatible type tags
+            converting i,w,b types (?)
+    	Check exceptions when shutting down manager
+    	clean up debugging print statements PARTIAL
+
+GUI:
+    Sort ID numerically instead of lexically
+    
+In memory server:
+       Get/set blacklist/whitelist:  Implemented but not accessible
+       Make sure all names are case insensitive but case preserving
+       Manipulate whitelist from server interface
+       Prohibit dropping registry connection
+
+Registry:
+	Separate process registry needs to get path from command line
+	performance test with/without fsync() -- possibly need separate thread for registry so sync() doesn't block manager
+	Stop relying on garbage collection to clean up directory contexts
+	Test compatibility with delphi registry dir
+
+Optional:
+	Make registry optional
+
+Performance optimization:
+	Do endian conversion without full unflattening 
+	Avoid unflattening completely for remote servers
+	PARTIAL: lazy lists are not unflattened if contents don't 
+      	       require unit/type/endian conversion.  Still need 
+	       optimization to unflatten as numpy array for
+      	       unit conversion -- IN PROGRESS, see types.py / TransformingBuffer
+    
+      detect when endianness / unit conversions allow it.  For
+      	     simplicty, only allow direct communication for 
+	     big-endian clients and servers  that don't require unit conversion
+      Change flatteing to use buffer API to avoid reallocation -- DONE
+
+
+DONE:
+    Convert units -- DONE
+    Accept connections, check whitelist handle signon -- DONE
+    Convert endiennes -- DONE
+    add default client index to zero context -- DONE
+    how are settings registered?  message or request? -- DONE
+    Manage list of connected clients/servers -- DONE
+    When client disconnects:
+        Send context expiration to serve -- DONE
+
+    utility functions (unit conversion, flatten/unflatten, help) -- DONE
+    Manipulate server setting lists -- DONE
+    Handle named signal subscriptions -- DONE
+
+    Allow gui-free startup -- Avoid QT dependency entirely DONE
+    Generate error response on sendPacket failure DONE
+    Get unit type conversion working (to extent supported by pylabrad) DONE
+
+    Save/restore whitelist DONE
+    Prohibit dropping manager connection DONE
+    Enforce blacklist DONE
+
+    Make registry files end with newline DONE
+    Make all file writes atomic  DONE
+    Make registry get path from cfg object when invoked from manager DONE
+    Use delphi compatible format DONE
+
+    Try PyPy (without QT) -- DONE Poor performance for some reason
+
+avoid extra flattening/unflattening for in-memory servers (probably not helpful since the in-memory servers are not performance critical)
+Allow extra in-memory servers -- Probably not particularly helpful
+
+Would be cool:
+
+peer-to-peer server with built-in manager -- only big-endian (?) -- won't help qubit sequencer easily
+
+How to make peer-peer work:
+    server registers with manager as p-p capable, gives IP and port
+    client asks manager for connection token
+    connect to server with API v2.1, provides connection token
+    	    connection token = hmac(client ID + sequence number (?), server secret token)
+    server asks manager to validate connection token, or does so automatically
+    server must validate input data and do unit conversions
+
+version 2.1:
+	support version negotiation
+	Big endian only
+	No 'v' tag
+	support 64 bit integer (tag=L)
+	manager doesn't do unit conversion
+	Allow p-p
+
+Performance benchmarking:
+manager CPU core i3 530 @ 2.93 GHz
+    %time sq.lollipop(s, 'q1', update=False, df=10*MHz)
+    python manager: (slow types)
+        CPU times: user 71.62 s, sys: 0.00 s, total: 71.62 s
+        Wall time: 71.62 s    
+    delphi manager:
+        CPU times: user 42.25 s, sys: 0.00 s, total: 42.25 s
+        Wall time: 42.25 s    
+    python manager with fasttypes:
+        CPU times: user 26.30 s, sys: 0.00 s, total: 26.30 s
+        Wall time: 26.30 s
+    stats   time (pyfast)    time (delphi)
+     300     23.3             15.69 
+     1000    29.75            29.67
+     2000    36.08
+     3000    52.10
+     4000    61.74            61.35
+     6000    92.01
+     8000   136.45            123.2
+    %time sq.lollipop(s, 'q1', update=False, df=10*MHz, stats=1000)
+        CPU times: user 29.75 s, sys: 0.00 s, total: 29.75 s
+        Wall time: 29.75 s
+unable to convert data for request -2 to setting 1100:
+data: (([3, -6, 0, ...]),), allowed types: '['*2w', '*3w', LRError(LRAny())]'
+
+calculate_readout_axis, 30000 stats:
+delphi: 9.83s

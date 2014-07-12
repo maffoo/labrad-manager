@@ -1,0 +1,42 @@
+Setting up menu bar:
+
+Right click main widget background and select "add toolbar"
+On "Action Editor" tab of lower-right menu box, add actions.
+Drag actions to toolbar
+Actions will also be used for 
+
+
+
+Setting up tight-fitting layout with resize handles:
+
+Add two or more widgets to main panel.  Use QWidget for generic widget
+Ctrl-click select both widgets.
+Context menu select Layout->Layout Horizontally with Splitter
+Go to QMain Window in the object inspector and select Layout->Veritcal layout
+
+
+
+Binding to code by promotion:
+
+Go to object inspector and right-click target Widget and slect "Promote to..."
+Check to make sure base class is correct.
+Select New Class Name MyWidget and select "mywidget.h" as header file.
+Hit add
+Hit promote
+You can use multiple widgets, they should share a header file name (I don't know if this matters)
+
+Define code in mywidget.py
+
+class MyWidget(QtGui.QWidget):
+      def initialize(self):
+        ''' Setup action handlers here '''
+        delete_action = QtGui.QAction("Delete Directory", self)
+        delete_action.triggered.connect(self.on_delete_dir)
+            
+class MyMainWindow(QtGui.QMainWindow):
+    def __init__(self, *args, **kw):
+        super(MyMainWindow, self).__init__()
+        uic.loadUi('mywidget.ui', self)
+	# self.widget_name will be set to the sub-widgets
+        self.show()
+
