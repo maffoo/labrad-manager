@@ -8,7 +8,7 @@ import os
 #        base_path = "U://"
 
 from PyQt4 import QtCore, QtGui, uic
-import qtreactor.qt4reactor as qt4reactor
+import qt4reactor
 app = QtGui.QApplication(sys.argv)
 qt4reactor.install()
 import pymanager
