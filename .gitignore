@@ -5,6 +5,9 @@ LabRAD.ini
 __pycache__/
 *.py[cod]
 
+# Editor backup files
+*~
+
 # C extensions
 *.so
 

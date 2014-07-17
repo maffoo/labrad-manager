@@ -1,0 +1,8 @@
+*.py		eol=lf
+*.ui		eol=lf
+*.txt		text
+README.md 	text
+*.exe		binary
+*.png		binary
+*.jpeg		binary
+*.jpg		binary
