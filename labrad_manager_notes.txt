@@ -13,6 +13,59 @@ expects records without type tags.  sendPacket can accept records with type
 tags, but does not require them.
 
 
+FIXME:
+	Change lazy lists to not be lazy
+	Fix unit handling, use ValueArrays
+	Make sure pylabrad is always unflattening as the expected data type
+	Make 'synchronous' packet type for debugging.
+	Make error message specify which setting had the error "error in setting 5L (cd), cannot flatten argument...
+
+Login sequence:
+        # Packet 1: origin client, target 1, context any, request ID: positive, no records
+        # Response: from source ID 1, same context, -request ID, single response settnig 0: (s) pw challenge
+
+        # Packet 2: origin client: target 1, context any, request ID: positive, setting 0 MD5(pw_challenge + pw)
+        # Response: from setting 0: (s) welcome message or error
+
+	# Packet 3: target 1, context any, request ID any, setting 0 (ws) or (wsss) for client/server
+        # containing protocol version, client/server name, description, remarks.
+        # Response: from setting 0: (w) connection ID or error.
+
+
+Protocol version 3:
+	 Improved protocol negotiation
+	 	  Client adds records in the initial request to indicate it knows about version negotiation
+		  Check old server behavior: presumably it disconnects -- client reconnects as v2.0
+		  Otherwise server replies with the version it will use along with pw challenge
+		  Feature negotiation happens in packet 3.
+	 Force big-endian
+	 Don't convert data in manager
+	       This can coexist with version 2 clients.  Always convert or not based on desination unless
+	       	       little endian data targets v3 connection in which case always convert (only endian?).
+	       Forward requests (ID > 0) are always converted at the server.
+	       Responses (ID < 0) are converted at client or server?  Client is 'safer', server has the right
+	       		 information	     
+
+	 Allow auxillary direct connection with fallback to manager 
+	       Server advertizes its availablility
+	       Client requests temporary auth token via manager
+	       Client connects to server.
+	       Disconnect of auxillary connection cause revert to manager
+	       How to handle context expiration notices?  First message from context always via manager?
+	       Only allow (0,x) contexts?  Seems overly limiting
+	 Add 64 bit integer type (q)
+	 Add unitless float type (f)   # Hopefully reduce confusion over v vs v[]
+	 Add unitless complex type (z) # Hopefully reduce confusion over c vs c[]
+	 Add unicode type (u) -- don't make strings default to unicode
+	 Add option negotiation to handshake phase
+	 Safe context -- contexts that will raise an error if the context doesn't exist on the server.
+	      Client and server must both support it.
+	      Client must explicitly request it for each server
+	      Client asks manager to support explicit contexts for a specific server (?)
+	      Client calls init_context on server
+	      Every request from client has 'notify on new context' flag?
+	      
+
 TODO: 
 Core:
 	Optimize unit conversion for arrays using numpy
