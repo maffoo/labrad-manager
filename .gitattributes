@@ -1,8 +1,15 @@
 *.py		eol=lf
 *.ui		eol=lf
+*.java		eol=lf
+*.sh		eol=lf
+*.bat		eol=crlf
 *.txt		text
 README.md 	text
 *.exe		binary
+*.jar		binary
+*.war		binary
+*.lnk		binary
 *.png		binary
 *.jpeg		binary
 *.jpg		binary
+*.ico		binary
