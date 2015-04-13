@@ -78,7 +78,7 @@ date_re = re.compile(r'\d+/\d+/\d+ \d+:\d+:\d+(\.\d+)?')
 long_re = re.compile('\d+')
 int_re = re.compile('[+-]\d+')
 string_re = re.compile("('[^'\000-\037\177-\377]*'|#[0-9]{1,3})+")
-float_re = re.compile(r'[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?')
+float_re = re.compile(r'(?:[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?|NAN\.0)')
 complex_re = re.compile(r'%s\+?%s[ij]' % (float_re.pattern, float_re.pattern))
 unit_re = re.compile(r'[A-Za-z][A-Za-z0-9^/*]*')
 value_re = re.compile(r'(%s) (%s)' % (float_re.pattern, unit_re.pattern))
@@ -143,13 +143,19 @@ def parse_complex(in_str):
     return complex(in_str[:-1]+'j')
 def parse_value(in_str):
     mo = value_re.match(in_str)
-    return float(mo.group(1))*labrad.units.Unit(mo.group(2))
+    if mo.group(1) == "NAN.0":
+        x = float('nan')
+    else:
+        x = float(mo.group(1))
+    return x*labrad.units.Unit(mo.group(2))
 def parse_complex_value(in_str):
     mo = complex_value_re.match(in_str)
     return parse_complex(mo.group(1)) * labrad.units.Unit(mo.group(2))
     
 def parse_number(in_str):
     if '.' in in_str or 'e' in in_str or 'E' in in_str:
+        if in_str == 'NAN.0':
+            return float('nan')
         return float(in_str)
     elif in_str[0] in "+-":
         return int(in_str)
