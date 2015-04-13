@@ -30,7 +30,7 @@ def migrate(cxn, root):
 		# compute the registry path
 		regpath = []
 		path = dirpath
-		while path != root:
+		while os.path.abspath(path) != os.path.abspath(root):
 			path, dirname = os.path.split(path)
 			regpath.insert(0, decode_filename(dirname[:-4]))
 		regpath.insert(0, '')
